@@ -90,6 +90,15 @@ Node PopTop(Queue &q) {
     return temp;
 }
 
+void freeQueue(Queue &q){
+    HNode *p;
+    while(q.pHead != NULL){
+        p = q.pHead;
+        q.pHead = q.pHead->pNext;
+        delete p;
+    }
+}
+
 int main()
 {
     // int vars
@@ -103,6 +112,8 @@ int main()
     string comORnot;
     string fileName;
     int choice;
+    Queue q;
+    Init(q);
 
     // input data
     while(true){
@@ -168,6 +179,8 @@ int main()
                     huffNode[k_huff].f = f[i];
                     huffNode[k_huff].pLeft = NULL;
                     huffNode[k_huff].pRight = NULL;
+                    HNode *tempHuff = getNode(huffNode[k_huff]);
+                    AddAfterNode(q, tempHuff);
                     k_huff++;
                 }
             }
@@ -206,7 +219,7 @@ int main()
             no1->pRight = &huffNode[1];
 
             //==========================================
-
+            /*
             for(int i = 0; i < m_huffNode_temp; i++){
                 // find 2 mins in array
                 if(m_huffNode_temp == 1){
@@ -220,7 +233,7 @@ int main()
                     if(huffNode_temp[i]->f > min_1)
                 }
             }
-
+            */
             huffNode_temp[m_huffNode_temp] = no1;
             m_huffNode_temp++;
 
@@ -272,6 +285,7 @@ int main()
     inputFile.close();
     codedChars.close();
     compressedFile.close();
+    freeQueue(q);
 
     cout << endl << endl << endl;
 
