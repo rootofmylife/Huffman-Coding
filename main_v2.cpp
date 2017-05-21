@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <bitset>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -108,7 +110,10 @@ void saveCode(Node* head, string c, unsigned char table[]) {
             //    http://www.cplusplus.com/forum/general/51192/
             //    http://stackoverflow.com/questions/18937892/c-string-to-binary-code-binary-code-to-string
             //    http://stackoverflow.com/questions/13823656/how-to-convert-char-to-an-array-of-bits-in-c
-        //table['head->c'] = c;
+        char *pr;
+        long int neu = strtol(c.c_str(), &pr, 2);
+        table['head->c'] = neu;
+        return;
     }
     saveCode(head->pLeft, c + "0", table);
     saveCode(head->pRight, c + "1", table);
