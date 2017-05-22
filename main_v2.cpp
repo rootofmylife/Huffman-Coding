@@ -105,11 +105,15 @@ void freeQueue(Queue &q){
     }
 }
 
-void saveCode(Node* head, string c, unsigned char table[]) {
+void saveCode(Node* head, string c, long int table[]) {
     if(head->c != '$'){
             //    http://www.cplusplus.com/forum/general/51192/
             //    http://stackoverflow.com/questions/18937892/c-string-to-binary-code-binary-code-to-string
             //    http://stackoverflow.com/questions/13823656/how-to-convert-char-to-an-array-of-bits-in-c
+            //    http://stackoverflow.com/questions/23537053/storing-a-bit-in-a-bit-of-character-array-in-c-linux
+            //    http://stackoverflow.com/questions/3289065/how-to-store-8-bits-in-char-using-c
+            //    http://stackoverflow.com/questions/26348566/is-there-a-way-to-convert-string-to-binary-data-to-reduce-size
+            //    http://stackoverflow.com/questions/19229561/storing-a-two-bit-binary-in-char
         char *pr;
         long int neu = strtol(c.c_str(), &pr, 2);
         table['head->c'] = neu;
@@ -119,17 +123,35 @@ void saveCode(Node* head, string c, unsigned char table[]) {
     saveCode(head->pRight, c + "1", table);
 }
 
+string readFile(ifstream &input, char * name){
+    input.open(name, ifstream::binary);
+    if(input){
+        input.seekg(0, input.end);
+        int length = input.tellg();
+        input.seekg(0, input.beg);
+
+        char *buffer = new char[length];
+        input.read(buffer, length);
+
+        input.close();
+
+        string t(buffer);
+        delete buffer;
+        return t;
+    }
+    return NULL;
+}
+
 int main()
 {
-    // int vars
     unsigned int f[256];
     for(int i = 0; i < 256; i++) {
         f[i] = 0;
     }
 
-    unsigned char code[256];
+    long int code[256] = {0};
 
-    ifstream inputFile;
+    ifstream input;
     ofstream codedChars("codeChar.txt", ios::out | ios::binary);
     ofstream compressedFile;
     string comORnot;
@@ -173,17 +195,10 @@ int main()
                 name[i] = fileName[i];
             }
 
-            inputFile.open(name, ios::in | ios::binary);
+            string str_temp = readFile(input, name);
 
-            if(!inputFile) {
-                cout << "Cannot open file...";
-                return 0;
-            }
-
-            char c;
-            while(!inputFile.eof()) {
-                inputFile.read(&c, 1);
-                f[(int)c]++;
+            for(int i = 0; i < str_temp.length(); i++){
+                f[(int)str_temp[i]]++;
             }
 
             int co2 = 0;
@@ -216,6 +231,9 @@ int main()
 
 
 
+
+
+
             while(true){
                 Node no1 = PopTop(q);
                 Node no2 = PopTop(q);
@@ -226,14 +244,22 @@ int main()
                 no3.pRight = &no2;
                 HNode* noH = getNode(no3);
                 AddAfterNode(q, noH);
+                cout << endl << endl << endl;
+                for(HNode *i = q.pHead; i != NULL; i = i->pNext){
+                    cout << i->data.c << ": " << i->data.f << endl;
+                }
                 if(q.pHead == q.pTail){
                     break;
                 }
             }
 
+
+            cout << endl << endl << endl;
+
             Node *head = &q.pHead->data;
-            string coded = "";
-            saveCode(head, coded, code);
+            cout << head->pLeft->c;
+//            string coded = "";
+//            saveCode(head, coded, code);
 
             delete huffNode;
             delete name;
@@ -245,7 +271,6 @@ int main()
         }
     }
 
-    inputFile.close();
     codedChars.close();
     compressedFile.close();
     freeQueue(q);
