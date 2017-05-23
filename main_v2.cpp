@@ -25,13 +25,16 @@ void Init(Queue &q){
     q.pHead = q.pTail = NULL;
 }
 
-HNode* getNode(Node x){
+HNode* getNode(Node* x){
     HNode *p = new HNode;
     if(p == NULL){
         cout << "can't create HNode...";
         return NULL;
     }
-    p->data = x;
+    p->data.c = x->c;
+    p->data.f = x->f;
+    p->data.pLeft = x->pLeft;
+    p->data.pRight = x->pRight;
     p->pNext = NULL;
     return p;
 }
@@ -105,8 +108,8 @@ void freeQueue(Queue &q){
     }
 }
 
-void saveCode(Node* head, string c, long int table[]) {
-    if(head->c != '$'){
+void saveCode(Node* head, string c, string table[]) {
+    if(head != NULL){
             //    http://www.cplusplus.com/forum/general/51192/
             //    http://stackoverflow.com/questions/18937892/c-string-to-binary-code-binary-code-to-string
             //    http://stackoverflow.com/questions/13823656/how-to-convert-char-to-an-array-of-bits-in-c
@@ -114,16 +117,18 @@ void saveCode(Node* head, string c, long int table[]) {
             //    http://stackoverflow.com/questions/3289065/how-to-store-8-bits-in-char-using-c
             //    http://stackoverflow.com/questions/26348566/is-there-a-way-to-convert-string-to-binary-data-to-reduce-size
             //    http://stackoverflow.com/questions/19229561/storing-a-two-bit-binary-in-char
-        char *pr;
-        long int neu = strtol(c.c_str(), &pr, 2);
-        table['head->c'] = neu;
-        return;
+        if(head->c != '$'){
+            cout << head->c << "\t" << head->f << endl;
+            //char *pr;
+            //long int neu = strtol(c.c_str(), &pr, 2);
+            table[(int)head->c] = c;
+        }
+        saveCode(head->pLeft, c + "0", table);
+        saveCode(head->pRight, c + "1", table);
     }
-    saveCode(head->pLeft, c + "0", table);
-    saveCode(head->pRight, c + "1", table);
 }
 
-string readFile(ifstream &input, char * name){
+string readFile(ifstream &input, char* name){
     input.open(name, ifstream::binary);
     if(input){
         input.seekg(0, input.end);
@@ -149,7 +154,7 @@ int main()
         f[i] = 0;
     }
 
-    long int code[256] = {0};
+    string code[256] = {""};
 
     ifstream input;
     ofstream codedChars("codeChar.txt", ios::out | ios::binary);
@@ -208,60 +213,91 @@ int main()
                 }
             }
 
-            Node *huffNode = new Node[co2];
+            Node **huffNode = new Node*[co2];
             int k_huff = 0;
+
+            for(int i = 0; i < co2; i++) {
+                huffNode[i] = new Node;
+            }
 
             for(int i = 0; i < 256; i++){
                 if(f[i] != 0) {
-                    huffNode[k_huff].c = char(i);
-                    huffNode[k_huff].f = f[i];
-                    huffNode[k_huff].pLeft = NULL;
-                    huffNode[k_huff].pRight = NULL;
+                    huffNode[k_huff]->c = char(i);
+                    huffNode[k_huff]->f = f[i];
+                    huffNode[k_huff]->pLeft = NULL;
+                    huffNode[k_huff]->pRight = NULL;
                     HNode *tempHuff = getNode(huffNode[k_huff]);
                     AddAfterNode(q, tempHuff);
                     k_huff++;
                 }
             }
 
-            for(HNode *i = q.pHead; i != NULL; i = i->pNext){
-                cout << i->data.c << ": " << i->data.f << endl;
-            }
+//            for(HNode *i = q.pHead; i != NULL; i = i->pNext){
+//                cout << i->data.c << ": " << i->data.f << endl;
+//            }
 
             //create huffman tree
 
-
-
-
-
-
             while(true){
-                Node no1 = PopTop(q);
-                Node no2 = PopTop(q);
-                Node no3;
-                no3.c = '$';
-                no3.f = no1.f + no2.f;
-                no3.pLeft = &no1;
-                no3.pRight = &no2;
+                Node t1 = PopTop(q);
+                Node *no1 = new Node;
+                no1->c = t1.c;
+                no1->f = t1.f;
+                no1->pLeft = t1.pLeft;
+                no1->pRight = t1.pRight;
+                Node t2 = PopTop(q);
+                Node *no2 = new Node;
+                no2->c = t2.c;
+                no2->f = t2.f;
+                no2->pLeft = t2.pLeft;
+                no2->pRight = t2.pRight;
+                Node *no3 = new Node;
+                no3->c = '$';
+                no3->f = no1->f + no2->f;
+                no3->pLeft = no1;
+                no3->pRight = no2;
                 HNode* noH = getNode(no3);
                 AddAfterNode(q, noH);
-                cout << endl << endl << endl;
-                for(HNode *i = q.pHead; i != NULL; i = i->pNext){
-                    cout << i->data.c << ": " << i->data.f << endl;
-                }
+//                cout << endl << endl << endl;
+//                for(HNode *i = q.pHead; i != NULL; i = i->pNext){
+//                    cout << i->data.c << ": " << i->data.f << endl;
+//                }
                 if(q.pHead == q.pTail){
                     break;
                 }
             }
 
-
             cout << endl << endl << endl;
 
             Node *head = &q.pHead->data;
-            cout << head->pLeft->c;
-//            string coded = "";
-//            saveCode(head, coded, code);
+            string c = "";
+            saveCode(head, c, code);
 
-            delete huffNode;
+            cout << endl << endl << endl;
+            for(int i = 0; i < 256; i++){
+                if(code[i] != ""){
+                    cout << (char)i << ": " << code[i] << endl;
+                }
+            }
+
+            string str_temp_encoded = "";
+
+            for(int i = 0; i < str_temp.length(); i++){
+                str_temp_encoded += code[(int)str_temp[i]];
+            }
+
+            cout << endl << endl << endl;
+            cout << str_temp_encoded;
+
+            for (size_t i = 0; i < str_temp_encoded.size(); ++i){
+                codedChars << bitset<8>(str_temp_encoded.c_str()[i]);
+            }
+
+            for(int i = 0; i < co2; i++){
+                delete huffNode[i];
+            }
+
+            delete[] huffNode;
             delete name;
             break;
         }
